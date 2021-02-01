@@ -22,6 +22,7 @@ int DCpowerState = false;   //
 // milliseconds, will quickly become a bigger number than can be stored in an int.
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
+unsigned long holdDelay = 500;    // hold to activate second setting
 unsigned long previousMillis = 0;   // will store last time LED was updated
 unsigned long lastDCTime = 0;  // the last time the DCState was changed to true
 
@@ -50,7 +51,7 @@ void loop() {
     lastDebounceTime = millis();
   }
 
-  if ((millis() - lastDebounceTime) > debounceDelay) {
+  if ((millis() - lastDebounceTime) > debounceDelay < holdDelay) {
     // whatever the reading is at, it's been there for longer than the debounce
     // delay, so take it as the actual current state:
 
@@ -64,7 +65,17 @@ void loop() {
         lastDCTime = millis();
       }
     }
-  }
+  } else if ((millis() - lastDebounceTime) > debounceDelay > holdDelay) {
+        // if the button state has changed:
+    if (reading != DCbuttonState) {
+      DCbuttonState = reading;
+
+      // only toggle the DCState if the new button state is HIGH, and reset timer
+      if (DCbuttonState == HIGH) {
+        DCpowerState = true;
+        lastDCTime = (millis() + 1800000);
+      }
+    }
 
 
   // save the reading. Next time through the loop, it'll be the lastDCButtonState:
@@ -83,7 +94,7 @@ void loop() {
  if ((millis() - lastDCTime) > intervalcountdown) {
     DCpowerState = false; 
  }
- if ((millis() - lastDCTime) < intervalwarning) {
+ if ((millis() - lastDCTime) > 0 < intervalwarning) {
     if ((millis() - previousMillis) >= intervalblink) {
     
     previousMillis = millis(); //save the last time it blinked
