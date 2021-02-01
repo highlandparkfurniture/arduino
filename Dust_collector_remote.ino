@@ -76,7 +76,7 @@ void loop() {
         lastDCTime = (millis() + 1800000);
       }
     }
-
+  }
 
   // save the reading. Next time through the loop, it'll be the lastDCButtonState:
   lastDCButtonState = reading;
